@@ -13,15 +13,12 @@ System_Ext(web, "Веб-клиент", "JavaScript")
 
 System_Boundary(social_network, "Социальная сеть") {
 
-Container(auth, "Сервис управления пользователями", "С++", $tags="microService")
+Container(auth, "Сервис управления пользователями", "", "С++", $tags="microService")
 Container(wall, "Сервис стены", "Управление стеной пользователя", "C++", $tags="microService")
 Container(chat, "Сервис чата", "Управление чатом пользователя", "C++", $tags="microService")
 
-Container(proxy, "ProxySQL", "Шардинг запросов к БД")
-
 ContainerDb(db, "База данных MariaDB", $tags="storage")
-ContainerDb(cache, "Redis", "Управление кэшированием данных")
-Container(kafka, "Apache Kafka", "Управление очередью событий")
+
 
 }
 
@@ -33,21 +30,10 @@ Rel(web, auth, "Работа с пользователями")
 Rel(web, wall, "Работа со стеной пользователя")
 Rel(web, chat, "Работа с чатом пользователя")
 
-Rel(auth, proxy, "INSERT/SELECT/UPDATE", "SQL") 
-Rel(wall, proxy, "INSERT/SELECT/UPDATE", "SQL")
-Rel(chat, proxy, "INSERT/SELECT/UPDATE", "SQL")
+Rel(auth, db, "INSERT/SELECT/UPDATE", "SQL") 
+Rel(wall, db, "INSERT/SELECT/UPDATE", "SQL")
+Rel(chat, db, "INSERT/SELECT/UPDATE", "SQL")
 
-Rel(proxy, db, "Шардинг SQL")  
-
-
-
-Rel(auth, cache, "Кеш пользователей", "Redis")  
-Rel(wall, cache, "Кеш стен", "Redis")
-Rel(chat, cache, "Кеш чатов", "Redis")
-
-Rel(auth, kafka, "События пользователей")
-Rel(wall, kafka, "События стены")
-Rel(chat, kafka, "События чата")
 
 @enduml
 
