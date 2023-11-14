@@ -1,0 +1,8 @@
+FROM ubuntu
+
+RUN apt-get -y update
+RUN apt-get -y install cmake make git build-essential libssl-dev mysql-client libmysqlclient-dev zlib1g-dev
+
+WORKDIR /root
+RUN git clone -b poco-1.11.7-release https://github.com/pocoproject/poco.git
+RUN cd poco && mkdir cmake-build && cd cmake-build && cmake .. && make && make install && cd .. && cd ..

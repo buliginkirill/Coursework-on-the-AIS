@@ -1,0 +1,96 @@
+networks:
+  my_network:
+services:
+  ubuntu-poco:
+    image: ubuntu-poco
+    build: 
+      context: .
+      dockerfile: Dockerfile_poco
+    command: /bin/true
+  mariadb:
+    image: mariadb_server
+    build:
+      context: ./mariadb
+      dockerfile: Dockerfile
+    container_name: db_server
+    restart: always
+    ports:
+      - "9000:3306"
+    networks:
+      - my_network
+    environment:
+      MYSQL_DATABASE: db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root
+    healthcheck:
+      test: "/usr/bin/mariadb --user=user --password=password --execute \"SHOW DATABASES;\""
+      interval: 15s
+      timeout: 1s
+      retries: 5
+  chat:
+    image: chat
+    container_name: chat_service
+    restart: always
+    build:
+      context: ./chat
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: database_server
+      DB_PORT: 3306
+      DB_LOGIN: user
+      DB_PASSWORD: password
+      DB_DATABASE: db
+    depends_on: 
+      mariadb:
+        condition: service_healthy
+    ports:
+      - "9001:8080"
+    networks:
+      - my_network
+    links:
+      - mariadb:database_server
+  wall:
+    image: wall
+    container_name: wall_service
+    restart: always
+    build:
+      context: ./wall
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: database_server
+      DB_PORT: 3306
+      DB_LOGIN: user
+      DB_PASSWORD: password
+      DB_DATABASE: db
+    depends_on: 
+      mariadb:
+        condition: service_healthy
+    networks:
+      - my_network
+    ports:
+      - "9002:8080"
+    links:
+      - mariadb:database_server
+  user:
+    image: user
+    container_name: user_service
+    restart: always
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: database_server
+      DB_PORT: 3306
+      DB_LOGIN: user
+      DB_PASSWORD: password
+      DB_DATABASE: db
+    depends_on: 
+      mariadb:
+        condition: service_healthy
+    networks:
+      - my_network
+    ports:
+      - "9003:8080"
+    links:
+      - mariadb:database_server

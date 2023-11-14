@@ -1,0 +1,113 @@
+openapi: '3.0.0'
+info:
+  version: '1.0.0'
+  title: 'Chat API'
+  description: Описание сервиса Chat
+servers:
+  - url: http://0.0.0.0:8080
+    description: Example server
+paths:
+  /chat:
+    get:
+      summary: Получение записей чата по ID пользователя
+      parameters:
+        - name: user_id
+          description: ID пользователя
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Сообщения чата по пользователю
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        404:
+          description: No user found for the provided mask
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Добавление нового пользователя
+      parameters:
+        - name: user_id
+          description: ID пользователя
+          in: query
+          required: true
+          schema:
+            type:  integer
+        - name: message
+          description: Сообщение
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Идентификатор, добавленного пользователя
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: Ошибка добавления пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    user_id:
+      description: Уникальный идентификатор пользователя
+      type: integer
+    messages:
+      type: array
+      items:
+        $ref: '#/components/schemas/message'
+    message:
+      description: Сообщение пользователя
+      type: object
+      required:
+        - id
+        - user_id
+        - content
+        - created_at
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        message:
+          type: string
+        created_at:
+          type: string
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          description: Сообщение о ошибке
+          type: string
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+security:
+  - basicAuth: []
