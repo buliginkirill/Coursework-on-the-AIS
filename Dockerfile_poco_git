@@ -1,5 +1,5 @@
 FROM ubuntu-poco
 
 WORKDIR /root
-RUN git clone -b lab-04 https://github.com/alexander-rodionov/Coursework-test.git
+RUN git clone -b lab-04 https://github.com/buliginkirill/Coursework-on-the-AIS
 
