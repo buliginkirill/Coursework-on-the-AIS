@@ -72,11 +72,13 @@ public:
         HTMLForm form(request, request.stream());
         std::cout<<request.getURI()<<std::endl;
         std::cout<<request.getMethod()<<std::endl;
+        form.write(std::cout);
         try
         {
             if (form.has("user_id") && (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET) and hasSubstr(request.getURI(), "/wall"))
             {
                 long user_id = atol(form.get("user_id").c_str());
+                std::cout<<"user_id"<<user_id<<std::endl;
                 std::vector<database::Wall> result = database::Wall::get(user_id);
                 if (!result.empty())
                 {

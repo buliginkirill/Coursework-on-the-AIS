@@ -58,7 +58,7 @@ public:
             hasSubstr(request.getURI(),"/search") ||
             hasSubstr(request.getURI(),"/auth")) 
             return new UserHandler(_format);
-        return 0;
+        return nullptr;
     }
 
 private:

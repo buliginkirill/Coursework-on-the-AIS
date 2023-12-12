@@ -22,13 +22,13 @@ namespace database
 
             static User fromJSON(const std::string & str);
 
-            [[nodiscard]] long             get_id() const;
-            [[nodiscard]] const std::string &get_first_name() const;
-            [[nodiscard]] const std::string &get_last_name() const;
-            [[nodiscard]] const std::string &get_email() const;
-            [[nodiscard]] const std::string &get_title() const;
-            [[nodiscard]] const std::string &get_login() const;
-            [[nodiscard]] const std::string &get_password() const;
+            long             get_id() const;
+            const std::string &get_first_name() const;
+            const std::string &get_last_name() const;
+            const std::string &get_email() const;
+            const std::string &get_title() const;
+            const std::string &get_login() const;
+            const std::string &get_password() const;
 
             long&        id();
             std::string &first_name();
@@ -45,11 +45,10 @@ namespace database
             static std::vector<User> search(std::string first_name,std::string last_name);
             void save_to_mysql();
 
-            void save_to_cache() const;
+            void save_to_cache();
             static std::optional<User> read_from_cache_by_id(long id);
 
-            [[nodiscard]] Poco::JSON::Object::Ptr toJSON() const;
-            void send_to_queue() const;
+            Poco::JSON::Object::Ptr toJSON() const;
 
     };
 }

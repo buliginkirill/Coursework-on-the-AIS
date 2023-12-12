@@ -62,8 +62,7 @@ namespace database
                         << "`message` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, "
                         << "`created_at` DATETIME NOT NULL, "
                         << "PRIMARY KEY (`id`), "
-                        << "KEY `user_id` (`user_id`), "
-                        << "FOREIGN KEY (`user_id`) REFERENCES `Author`(`id`) ON DELETE CASCADE "
+                        << "KEY `user_id` (`user_id`) "
                         <<  ");"
             , now;
             std::cout << "Init OK" << std::endl;

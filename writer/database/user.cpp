@@ -8,8 +8,7 @@
 #include <Poco/Data/RecordSet.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Dynamic/Var.h>
-#include "cache.h"
-#include <cppkafka/cppkafka.h>
+//#include "cache.h"
 
 #include <sstream>
 #include <exception>
@@ -286,6 +285,17 @@ namespace database
 
             insert.execute();
 
+//            Poco::Data::Statement select(session);
+//            std::cout<< select.toString();
+//
+//            select << "SELECT LAST_INSERT_ID() "+,
+//                into(_id),
+//                range(0, 1); //  iterate over result set one row at a time
+//
+//            if (!select.done())
+//            {
+//                select.execute();
+//            }
             std::cout << "inserted:" << _id << std::endl;
         }
         catch (Poco::Data::MySQL::ConnectionException &e)
@@ -371,7 +381,7 @@ namespace database
         return _title;
     }
 
-    std::optional<User> User::read_from_cache_by_id(long id)
+/*    std::optional<User> User::read_from_cache_by_id(long id)
     {
 
         try
@@ -389,46 +399,12 @@ namespace database
         }
     }
 
-    void User::save_to_cache() const
+    void User::save_to_cache()
     {
         std::stringstream ss;
         Poco::JSON::Stringifier::stringify(toJSON(), ss);
         std::string message = ss.str();
         database::Cache::get().put(_id, message);
     }
-
-    void User::send_to_queue() const
-    {
-        static cppkafka::Configuration config = {
-                {"metadata.broker.list", Config::get().get_queue_host()},
-                {"acks", "all"}};
-        static cppkafka::Producer producer(config);
-        static std::mutex mtx;
-        static int message_key{0};
-        using Hdr = cppkafka::MessageBuilder::HeaderType;
-
-        std::lock_guard<std::mutex> lock(mtx);
-        std::stringstream ss;
-        Poco::JSON::Stringifier::stringify(toJSON(), ss);
-        std::string message = ss.str();
-        bool not_sent = true;
-
-        cppkafka::MessageBuilder builder(Config::get().get_queue_topic());
-        std::string mk = std::to_string(++message_key);
-        builder.key(mk);                                       // set some key
-        builder.header(Hdr{"producer_type", "author writer"}); // set some custom header
-        builder.payload(message);                              // set message
-
-        while (not_sent)
-        {
-            try
-            {
-                producer.produce(builder);
-                not_sent = false;
-            }
-            catch (...)
-            {
-            }
-        }
-    }
+*/
 }

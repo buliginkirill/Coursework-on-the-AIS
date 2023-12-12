@@ -1,8 +1,8 @@
-export DB_HOST=192.168.100.173
-export DB_PORT=3306
-export DB_LOGIN=stud
-export DB_PASSWORD=stud
-export DB_DATABASE=service
+export DB_HOST=172.20.0.1
+export DB_PORT=9020
+export DB_LOGIN=user
+export DB_PASSWORD=password
+export DB_DATABASE=db
 
 export LD_LIBRARY_PATH=/usr/local/lib
 ./build/user

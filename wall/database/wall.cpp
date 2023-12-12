@@ -56,14 +56,13 @@ namespace database
         try {
             Poco::Data::Session session = database::Database::get().create_session();
             Statement create_stmt(session);
-            create_stmt << "CREATE TABLE IF NOT EXISTS `Message_wall` ("
+            create_stmt << "CREATE TABLE IF NOT EXISTS db.`Message_wall` ("
                         << "`id` INT NOT NULL AUTO_INCREMENT, "
                         << "`user_id` INT NOT NULL, "
                         << "`content` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, "
                         << "`created_at` DATETIME NOT NULL, "
                         << "PRIMARY KEY (`id`), "
-                        << "KEY `user_id` (`user_id`), "
-                        << "FOREIGN KEY (`user_id`) REFERENCES `Author`(`id`) ON DELETE CASCADE "
+                        << "KEY `user_id` (`user_id`) "
                         << ");", now;
             std::cout << "Init OK" << std::endl;
         }
@@ -87,7 +86,7 @@ namespace database
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement insert(session);
             //User a;
-            insert << "insert into Message_wall(user_id, content, created_at) values(?, ?, now())",
+            insert << "insert into db.Message_wall(user_id, content, created_at) values(?, ?, now())",
                     use(user_id),
                     use(message);
             Poco::Data::Statement select(session);
@@ -95,6 +94,8 @@ namespace database
             select <<"SELECT LAST_INSERT_ID();",
                 into(return_id),
                 range(0, 1);;
+            std::cout<<insert.toString()<<std::endl;
+            std::cout<<select.toString()<<std::endl;
             insert.execute();
             select.execute();
             Poco::Data::RecordSet rs(select);
@@ -122,13 +123,14 @@ namespace database
             std::vector<Wall> result;
             Wall a;
                 select << "select id, user_id, content, cast(created_at as varchar(100)) "
-                       << "from Message_wall where user_id = ?",
+                       << "from db.Message_wall where user_id = ?",
                     into(a._id),
                     into(a._user_id),
                     into(a._content),
                     into(a._created_at),
                     use(user_id),
                     range(0, 1); //  iterate over result set one row at a time
+                std::cout<<select.toString()<<std::endl;
             while (!select.done())
             {
                 if (select.execute()){

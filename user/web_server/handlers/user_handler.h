@@ -45,6 +45,7 @@ using Poco::Util::ServerApplication;
 
 #include "../../database/user.h"
 #include "../../helper.h"
+#include "../../config/config.h"
 
 static bool hasSubstr(const std::string &str, const std::string &substr)
 {
@@ -110,6 +111,7 @@ private:
         return true;
     };
 
+
 public:
     UserHandler(const std::string &format) : _format(format)
     {
@@ -125,16 +127,31 @@ public:
     void handleRequest(HTTPServerRequest &request,
                        HTTPServerResponse &response)
     {
+
         HTMLForm form(request, request.stream());
+        std::cout<<"--- Handling request ---\n";
+        form.write(std::cout);
         try
         {
             if (form.has("id") && (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET))
             {
+                std::cout<<"in id handler"<<std::endl;
                 long id = atol(form.get("id").c_str());
 
-                std::optional<database::User> result = database::User::read_by_id(id);
+                bool no_cache = false;
+                if (form.has("no_cache")) no_cache = true;
+
+                bool cache_hit = false;
+                std::optional<database::User> result =  std::nullopt;
+                if (!no_cache){
+                    result = database::User::read_from_cache_by_id(id);
+                    if (result) cache_hit = true;
+                }
+                if (!result) result = database::User::read_by_id(id);
+
                 if (result)
                 {
+                    if (!cache_hit && !no_cache) result->save_to_cache();
                     response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
                     response.setChunkedTransferEncoding(true);
                     response.setContentType("application/json");
@@ -160,7 +177,7 @@ public:
             }
             else if (hasSubstr(request.getURI(), "/auth"))
             {
-
+                std::cout<<"in auth handler"<<std::endl;
                 std::string scheme;
                 std::string info;
                 request.getCredentials(scheme, info);
@@ -170,13 +187,14 @@ public:
                 if (scheme == "Basic")
                 {
                     get_identity(info, login, password);
-                    if (auto id = database::User::auth(login, password))
+
+                    if (auto id_ = database::User::auth(login, password))
                     {
                         response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
                         response.setChunkedTransferEncoding(true);
                         response.setContentType("application/json");
                         std::ostream &ostr = response.send();
-                        ostr << "{ \"id\" : \"" << *id << "\"}" << std::endl;
+                        ostr << "{ \"id\" : \"" << *id_ << "\"}" << std::endl;
                         return;
                     }
                 }
@@ -196,7 +214,7 @@ public:
             }
             else if (hasSubstr(request.getURI(), "/search"))
             {
-
+                std::cout<<"in search handler"<<std::endl;
                 std::string fn = form.get("first_name");
                 std::string ln = form.get("last_name");
                 auto results = database::User::search(fn, ln);
@@ -213,6 +231,7 @@ public:
             }
             else if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_POST)
             {
+                std::cout<<"in post handler"<<std::endl;
                 if (form.has("first_name") && form.has("last_name") && form.has("email") && form.has("title") && form.has("login") && form.has("password"))
                 {
                     database::User user;
@@ -250,7 +269,8 @@ public:
 
                     if (check_result)
                     {
-                        user.save_to_mysql();
+                        //user.save_to_mysql();
+                        user.send_to_queue();
                         response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
                         response.setChunkedTransferEncoding(true);
                         response.setContentType("application/json");
@@ -269,8 +289,9 @@ public:
                 }
             }
         }
-        catch (...)
+        catch (const std::exception &exc)
         {
+            std::cerr << exc.what()<<std::endl;
         }
 
         response.setStatus(Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND);
